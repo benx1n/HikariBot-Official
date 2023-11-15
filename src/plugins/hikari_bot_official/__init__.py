@@ -40,7 +40,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '1.0.2.1'
+__bot_version__ = '0.1.1'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -203,9 +203,8 @@ async def update_Hikari(ev: MessageEvent, bot: Bot):
             #    *[download(each["url"], f"{driver.config.nb2_path}\{each['name']}") for each in nb2_file]
             # )
         logger.info(f'当前解释器路径{sys.executable}')
-        os.system(f'{sys.executable} -m pip install hikari-bot -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
+        os.system(f'{sys.executable} -m pip install hikari-bot-official -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
         os.system(f'{sys.executable} -m pip install hikari-core -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
-        os.system(f'{sys.executable} -m pip install nonebot-plugin-gocqhttp -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
         Reloader.reload(delay=1)
     except RuntimeError:
         if str(platform.system()).lower() == 'linux':
