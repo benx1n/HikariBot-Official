@@ -83,12 +83,17 @@
 2. 复制一份`.env.prod-example`文件，并将其重命名为`.env.prod`,打开并按其中注释编辑
     >只显示了.env，没有后面的后缀？请百度`windows如何显示文件后缀名`
     ```
+    id = xxxx
+    token = xxxxx
+    secret = xxxxx
     API_TOKEN = xxxxxxxx #无需引号，TOKEN即回复您的邮件所带的一串由[数字+冒号+英文/数字]组成的字符串
     SUPERUSERS=["QQ号"]
     ```
    - 最后TOKEN应该长这样 `API_TOKEN = 123764323:ba1f2511fc30423bdbb183fe33`
-
-3. 双击`启动.bat`
+3. 如果在服务器上部署保持`UPLOAD_IMAGE = local`即可，如需在无公网IP的环境上部署，请将该项修改为`oss`或`smms`
+   - 如使用`smms`，请前往[SMMS](https://smms.app/)注册账号后进入[API页面](https://smms.app/home/apitoken)获取Token并填入`SMMS_KEY`
+   - 如使用`oss`，请前往阿里云OSS创建对应存储库，将EndPoint和Bucket名分别填入`OSS_ENDPOINT`和`OSS_BUCKET`，并创建可读写Access令牌，将ID和Key分别填入`OSS_ID`和`OSS_KEY`
+4. 双击`启动.bat`
 
 
 ## 更新

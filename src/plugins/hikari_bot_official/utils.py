@@ -1,6 +1,7 @@
 import gzip
 import hashlib
 import io
+import os
 import time
 import traceback
 from collections import defaultdict
@@ -148,6 +149,8 @@ async def upload_smms(bytes):
 
 async def upload_local(bytes):
     md5 = await byte2md5(bytes)
+    if not os.path.exists(image_path):
+        os.mkdir(image_path)
     with open(image_path / f'{md5}.png', 'wb') as f:
         f.write(bytes)
     async with httpx.AsyncClient(proxies={}) as client:
