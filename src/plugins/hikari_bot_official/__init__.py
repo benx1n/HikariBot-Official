@@ -44,7 +44,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.1.6'
+__bot_version__ = '0.1.7'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -243,7 +243,7 @@ def web_run():
     if get_driver().config.upload_image == 'local':
         app: FastAPI = nonebot.get_app()
         if not os.path.exists(image_path):
-            os.makedirs(image_path)
+            os.mkdir(image_path)
         logger.success('本地文件服务器启动成功，请确认是否放行对应端口，如果没有公网ip请将配置项UPLOAD_IMAGE改为smms或oss')
 
         @app.get('/images/{filename}')
@@ -292,7 +292,7 @@ async def delete_image(ev: MessageEvent):
     try:
         shutil.rmtree(image_path, ignore_errors=True)
         if not os.path.exists(image_path):
-            os.makedirs(image_path)
+            os.mkdir(image_path)
         await delete_image_cache.send('清除缓存成功')
     except Exception:
         logger.error(traceback.format_exc())
