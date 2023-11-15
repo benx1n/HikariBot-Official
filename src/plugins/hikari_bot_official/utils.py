@@ -118,9 +118,9 @@ async def byte2md5(bytes):
 
 
 async def upload_oss(bytes):
-    endpoint = 'oss-cn-shanghai.aliyuncs.com'
+    endpoint = config.oss_endpoint
     auth = oss2.Auth(config.oss_id, config.oss_key)
-    bucket = oss2.Bucket(auth, endpoint, 'hikari-resource')
+    bucket = oss2.Bucket(auth, endpoint, config.oss_bucket)
     md5 = await byte2md5(bytes)
     key = f'bot_image/{md5}.png'
     bucket.put_object(key, bytes)
