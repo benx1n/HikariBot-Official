@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hikari-bot-official"
-version = "0.1.1"
+version = "0.1.2"
 description = "Nonebot2 HikariBot For QQ-Official,支持战舰世界水表查询"
 authors = ["benx1n <shirakamikanade@gmail.com>"]
 license = "MIT"
