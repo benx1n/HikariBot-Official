@@ -7,6 +7,7 @@ from nonebot.adapters.qq import Adapter
 from nonebot.log import default_format, logger
 
 nonebot.init()
+app = nonebot.get_asgi()
 
 driver = nonebot.get_driver()
 driver.register_adapter(Adapter)
@@ -42,4 +43,4 @@ if __name__ == '__main__':
         encoding='utf-8',
     )
     nonebot.load_from_toml('pyproject.toml')
-    nonebot.run()
+    nonebot.run(app='__mp_main__:app', access_log=False)
