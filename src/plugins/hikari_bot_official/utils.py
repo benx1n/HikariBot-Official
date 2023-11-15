@@ -9,10 +9,13 @@ from typing import Optional
 
 import httpx
 import nonebot
+import orjson
 import oss2
 import pytz
 from nonebot import get_driver
 from nonebot.adapters.qq import Bot
+
+from .data_source import image_path
 
 config = get_driver().config
 
@@ -127,3 +130,39 @@ async def upload_oss(bytes):
     url = bucket.sign_url('GET', key, 3600, slash_safe=True)
     print(url)
     return url
+
+
+async def upload_smms(bytes):
+    headers = {'Authorization': config.smms_key}
+    async with httpx.AsyncClient(proxies={}, headers=headers) as client:
+        files = {'smfile': bytes}
+        url = 'https://smms.app/api/v2/upload'
+        resp = await client.post(url, files=files)
+        result = orjson.loads(resp.content)
+        print(result)
+        if result['success']:
+            return result['data']['url']
+        else:
+            return result['images']
+
+
+async def upload_local(bytes):
+    md5 = await byte2md5(bytes)
+    with open(image_path / f'{md5}.png', 'wb') as f:
+        f.write(bytes)
+    async with httpx.AsyncClient(proxies={}) as client:
+        url = 'https://4.ipw.cn'
+        resp = await client.get(url)
+        ip = str(resp.text)
+    return f'http://{ip}:{config.port}/images/{md5}.png'
+
+
+async def upload_image(bytes):
+    if config.upload_image == 'oss':
+        return await upload_oss(bytes)
+    elif config.upload_image == 'smms':
+        return await upload_smms(bytes)
+    elif config.upload_image == 'local':
+        return await upload_local(bytes)
+    else:
+        return None

@@ -7,6 +7,9 @@ import traceback
 from collections import defaultdict, namedtuple
 
 import httpx
+import nonebot
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from hikari_core import callback_hikari, init_hikari, set_hikari_config
 from hikari_core.data_source import __version__
 from hikari_core.game.help import check_version
@@ -23,7 +26,7 @@ from nonebot.log import logger
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
 
-from .data_source import dir_path, nb2_file, template_path
+from .data_source import dir_path, image_path, nb2_file, template_path
 from .game.ocr import (
     downlod_OcrResult,
     get_Random_Ocr_Pic,
@@ -31,7 +34,7 @@ from .game.ocr import (
     upload_OcrResult,
 )
 from .game.pupu import get_pupu_msg
-from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, upload_oss
+from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, upload_image
 
 scheduler = require('nonebot_plugin_apscheduler').scheduler
 
@@ -40,7 +43,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.1.4'
+__bot_version__ = '0.1.5'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -105,13 +108,13 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
         )
         if hikari.Status == 'success':
             if isinstance(hikari.Output.Data, bytes):
-                url = await upload_oss(hikari.Output.Data)
+                url = await upload_image(hikari.Output.Data)
                 logger.success(url)
                 await wws.send(MessageSegment.image(url))
             elif isinstance(hikari.Output.Data, str):
                 await wws.send(hikari.Output.Data)
         elif hikari.Status == 'wait':
-            url = await upload_oss(hikari.Output.Data)
+            url = await upload_image(hikari.Output.Data)
             logger.success(url)
             await wws.send(MessageSegment.image(url))
             hikari = await wait_to_select(hikari)
@@ -120,7 +123,7 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
                 return
             hikari = await callback_hikari(hikari)
             if isinstance(hikari.Output.Data, bytes):
-                url = await upload_oss(hikari.Output.Data)
+                url = await upload_image(hikari.Output.Data)
                 logger.success(url)
                 await wws.send(MessageSegment.image(url))
             elif isinstance(hikari.Output.Data, str):
@@ -178,7 +181,7 @@ async def send_random_ocr_image(ev: MessageEvent):
     try:
         img = await get_Random_Ocr_Pic()
         if isinstance(img, bytes):
-            url = await upload_oss(img)
+            url = await upload_image(img)
             logger.success(url)
             await wws.send(MessageSegment.image(url))
         elif isinstance(img, str):
@@ -231,6 +234,19 @@ async def startup():
     except Exception:
         logger.error(traceback.format_exc())
         return
+
+
+@driver.on_startup
+def web_run():
+    if get_driver().config.upload_image == 'local':
+        app: FastAPI = nonebot.get_app()
+        if not os.path.exists(image_path):
+            os.makedirs(image_path)
+        logger.success('本地文件服务器启动成功，请确认是否放行对应端口，如果没有公网ip请将配置项UPLOAD_IMAGE改为smms或oss')
+
+        @app.get('/images/{filename}')
+        async def get_file(filename):
+            return FileResponse(image_path / filename)
 
 
 async def startup_download(url, name):

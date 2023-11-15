@@ -4,6 +4,7 @@ from nonebot import get_driver
 
 dir_path = Path(__file__).parent
 template_path = dir_path / 'template'
+image_path = dir_path / 'image_cache'
 config = get_driver().config
 
 nb2_file = [
