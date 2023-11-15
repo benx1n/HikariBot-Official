@@ -40,7 +40,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.1.3'
+__bot_version__ = '0.1.4'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -178,7 +178,9 @@ async def send_random_ocr_image(ev: MessageEvent):
     try:
         img = await get_Random_Ocr_Pic()
         if isinstance(img, bytes):
-            await bot_get_random_pic.send(MessageSegment.file_image(img))
+            url = await upload_oss(img)
+            logger.success(url)
+            await wws.send(MessageSegment.image(url))
         elif isinstance(img, str):
             await bot_get_random_pic.send(str(img))
     except Exception:
@@ -193,15 +195,6 @@ async def update_Hikari(ev: MessageEvent, bot: Bot):
         from nonebot_plugin_reboot import Reloader
 
         await bot.send(ev, '正在更新Hikari，完成后将自动重启，如果没有回复您已上线的消息，请登录服务器查看')
-        if hasattr(driver.config, 'nb2_path'):
-            # 并发fastgit会429，改为顺序请求
-            for each in nb2_file:
-                await download(each['url'], f"{driver.config.nb2_path}\\{each['name']}")
-                await asyncio.sleep(0.5)
-
-            # await asyncio.gather(
-            #    *[download(each["url"], f"{driver.config.nb2_path}\{each['name']}") for each in nb2_file]
-            # )
         logger.info(f'当前解释器路径{sys.executable}')
         os.system(f'{sys.executable} -m pip install hikari-bot-official -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
         os.system(f'{sys.executable} -m pip install hikari-core -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
