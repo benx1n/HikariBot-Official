@@ -2,6 +2,7 @@ import asyncio
 import os
 import platform
 import re
+import shutil
 import sys
 import traceback
 from collections import defaultdict, namedtuple
@@ -43,12 +44,13 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.1.5'
+__bot_version__ = '0.1.6'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
 bot_update = on_command('wws 更新Hikari', priority=5, block=True, permission=SUPERUSER)
-wws = on_command('wws', block=False, aliases={'WWS'}, priority=1)
+delete_image_cache = on_command('wws 清除本地缓存', priority=5, block=True, permission=SUPERUSER)
+wws = on_command('wws', block=False, aliases={'WWS'}, priority=10)
 bot_pupu = on_command('噗噗', block=False, priority=5)
 bot_listen = on_message(priority=5, block=False)
 driver = get_driver()
@@ -283,3 +285,15 @@ async def send_pupu_msg(ev: MessageEvent):
         except Exception:
             pass
         return
+
+
+@delete_image_cache.handle()
+async def delete_image(ev: MessageEvent):
+    try:
+        shutil.rmtree(image_path, ignore_errors=True)
+        if not os.path.exists(image_path):
+            os.makedirs(image_path)
+        await delete_image_cache.send('清除缓存成功')
+    except Exception:
+        logger.error(traceback.format_exc())
+        await delete_image_cache.send('清除缓存失败')
