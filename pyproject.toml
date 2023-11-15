@@ -1,20 +1,20 @@
 [tool.poetry]
 name = "hikari-bot-official"
 version = "0.1"
-description = "Nonebot2 HikariBot,支持战舰世界水表查询"
+description = "Nonebot2 HikariBot For QQ-Official,支持战舰世界水表查询"
 authors = ["benx1n <shirakamikanade@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/benx1n/Hikari-official"
-repository = "https://github.com/benx1n/Hikari-official"
+homepage = "https://github.com/benx1n/HikariBot-Official"
+repository = "https://github.com/benx1n/HikariBot-Official"
 keywords = ["nonebot", "nonebot2", "qqbot", "wows", "wws","bot","stats"]
 packages = [
-    { include = "hikari_bot", from = "./src/plugins/"}
+    { include = "hikari_bot_official", from = "./src/plugins/"}
 ]
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-nonebot2 = { version = "^2.0.1", extras = ["fastapi","websockets","httpx"] }
+nonebot2 = { version = "^2.1.0", extras = ["fastapi","websockets","httpx"] }
 nonebot-adapter-qq = "^1.1.0"
 nonebot-plugin-apscheduler = "^0.2.0"
 httpx = { version = ">=0.24.0", extras = ["http2"] }
@@ -31,7 +31,7 @@ isort = "^5.12.0"
 
 [tool.nonebot]
 plugins = ["nonebot_plugin_apscheduler"]
-#plugins = ["nonebot_plugin_apscheduler","nonebot_plugin_guild_patch","hikari_bot"]
+#plugins = ["nonebot_plugin_apscheduler","nonebot_plugin_guild_patch","hikari_bot_official"]
 plugin_dirs = ["src/plugins"]
 
 [[tool.poetry.source]]

@@ -11,7 +11,12 @@ from hikari_core import callback_hikari, init_hikari, set_hikari_config
 from hikari_core.data_source import __version__
 from hikari_core.game.help import check_version
 from hikari_core.model import Hikari_Model
-from hikari_core.moudle.wws_real_game import get_diff_ship
+from hikari_core.moudle.wws_real_game import (
+    add_listen_list,
+    delete_listen_list,
+    get_diff_ship,
+    get_listen_list,
+)
 from nonebot import get_driver, on_command, on_fullmatch, on_message, require
 from nonebot.adapters.qq import ActionFailed, Bot, Message, MessageEvent, MessageSegment
 from nonebot.log import logger
@@ -38,8 +43,8 @@ _flmt = FreqLimiter(3)
 __bot_version__ = '1.0.2.1'
 
 test = on_command('test', priority=4, block=True)
-bot_get_random_pic = on_fullmatch('wws 随机表情包', block=True, priority=5)
-bot_update = on_fullmatch('wws 更新Hikari', priority=5, block=True, permission=SUPERUSER)
+bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
+bot_update = on_command('wws 更新Hikari', priority=5, block=True, permission=SUPERUSER)
 wws = on_command('wws', block=False, aliases={'WWS'}, priority=1)
 bot_pupu = on_command('噗噗', block=False, priority=5)
 bot_listen = on_message(priority=5, block=False)
@@ -86,7 +91,18 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
             return False
         _flmt.start_cd(qqid)
         _nlmt.increase(qqid)
-        hikari = await init_hikari(platform=server_type, PlatformId=str(qqid), command_text=str(matchmsg), GroupId=group_id)
+        hikari = await init_hikari(
+            platform=server_type,
+            PlatformId=str(qqid),
+            command_text=str(matchmsg),
+            GroupId=group_id,
+            Ignore_List=[
+                add_listen_list,
+                delete_listen_list,
+                get_diff_ship,
+                get_listen_list,
+            ],
+        )
         if hikari.Status == 'success':
             if isinstance(hikari.Output.Data, bytes):
                 url = await upload_oss(hikari.Output.Data)
