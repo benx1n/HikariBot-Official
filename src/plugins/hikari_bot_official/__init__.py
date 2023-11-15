@@ -44,7 +44,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.1.9'
+__bot_version__ = '0.2.0'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -73,12 +73,8 @@ SecletProcess = defaultdict(lambda: SlectState(False, None, None))
 
 @test.handle()
 async def handle_first_receive(event: MessageEvent):
-    print(event)
-    print(event.get_user_id())
-    print(event.get_message())
-    print(event.get_type())
-    print(event.get_session_id())
-    await test.send('收到消息')
+    user_id = event.get_user_id()
+    await test.send(f'您的USER_ID为{user_id}')
 
 
 @wws.handle()
@@ -200,6 +196,11 @@ async def update_Hikari(ev: MessageEvent, bot: Bot):
         from nonebot_plugin_reboot import Reloader
 
         await bot.send(ev, '正在更新Hikari，完成后将自动重启，如果没有回复您已上线的消息，请登录服务器查看')
+        if hasattr(driver.config, 'nb2_path'):
+            # 并发fastgit会429，改为顺序请求
+            for each in nb2_file:
+                await download(each['url'], f"{driver.config.nb2_path}\\{each['name']}")
+                await asyncio.sleep(1)
         logger.info(f'当前解释器路径{sys.executable}')
         os.system(f'{sys.executable} -m pip install hikari-bot-official -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')
         os.system(f'{sys.executable} -m pip install hikari-core -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade')

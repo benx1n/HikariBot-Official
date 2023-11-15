@@ -87,9 +87,10 @@
     token = xxxxx
     secret = xxxxx
     API_TOKEN = xxxxxxxx #无需引号，TOKEN即回复您的邮件所带的一串由[数字+冒号+英文/数字]组成的字符串
-    SUPERUSERS=["QQ号"]
+    SUPERUSERS=["唯一ID"]
     ```
    - 最后TOKEN应该长这样 `API_TOKEN = 123764323:ba1f2511fc30423bdbb183fe33`
+   - SUPERUSERS请在首次启动BOT后发送test，BOT将会回复你的USER_ID，再填入配置文件中重启即可
 3. 如果在服务器上部署保持`UPLOAD_IMAGE = local`即可，如需在无公网IP的环境上部署，请将该项修改为`oss`或`smms`
    - 如使用`smms`，请前往[SMMS](https://smms.app/)注册账号后进入[API页面](https://smms.app/home/apitoken)获取Token并填入`SMMS_KEY`
    - 如使用`oss`，请前往阿里云OSS创建对应存储库，将EndPoint和Bucket名分别填入`OSS_ENDPOINT`和`OSS_BUCKET`，并创建可读写Access令牌，将ID和Key分别填入`OSS_ID`和`OSS_KEY`
