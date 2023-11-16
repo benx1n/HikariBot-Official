@@ -268,9 +268,9 @@ async def job_chech_version():
         await bot.send_private_msg(user_id=int(each), message=hikari.Output.Data)
 
 
-scheduler.add_job(job_chech_version, 'cron', hour=12)
-scheduler.add_job(startup, 'cron', hour=4)
-scheduler.add_job(downlod_OcrResult, 'interval', minutes=10)
+scheduler.add_job(job_chech_version, 'cron', hour=12, misfire_grace_time=60)
+scheduler.add_job(startup, 'cron', hour=4, misfire_grace_time=60)
+scheduler.add_job(downlod_OcrResult, 'interval', minutes=10, misfire_grace_time=60)
 
 
 @bot_pupu.handle()
