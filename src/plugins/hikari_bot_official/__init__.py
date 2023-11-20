@@ -82,7 +82,8 @@ async def handle_first_receive(event: MessageEvent):
 async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008, PLR0915
     try:
         if not await check_rule(ev):
-            return
+            # await wws.send('该功能请前往' + MessageSegment.mention_channel(5207171) + '使用')
+            await wws.finish('该功能已禁用')
         bot = get_bot()
         server_type = driver.config.platform
         qqid = ev.get_user_id()
@@ -176,7 +177,6 @@ async def change_select_state(ev: MessageEvent):
             return
         msg = str(ev.get_message()).strip()
         qqid = str(ev.get_user_id())
-        print(msg, qqid)
         if SecletProcess[qqid].state and str(msg).isdigit():
             if int(msg) <= len(SecletProcess[qqid].SelectList):
                 SecletProcess[qqid] = SecletProcess[qqid]._replace(state=False)
