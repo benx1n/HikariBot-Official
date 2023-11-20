@@ -23,6 +23,7 @@ from nonebot import get_driver, on_command, on_message, require
 from nonebot.adapters.qq import (
     ActionFailed,
     Bot,
+    DirectMessageCreateEvent,
     GuildMessageEvent,
     Message,
     MessageEvent,
@@ -80,7 +81,7 @@ async def handle_first_receive(event: MessageEvent):
 @wws.handle()
 async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008, PLR0915
     try:
-        print(matchmsg)
+        bot = get_bot()
         server_type = 'QQ_OFFICIAL'
         qqid = ev.get_user_id()
         group_id = None
@@ -92,6 +93,22 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
             return False
         _flmt.start_cd(qqid)
         _nlmt.increase(qqid)
+        if '发送私信' in str(matchmsg) and isinstance(ev, GuildMessageEvent):
+            try:
+                dms_response = await bot.call_api(
+                    'post_dms',
+                    recipient_id=str(qqid),
+                    source_guild_id=str(ev.guild_id),
+                )
+                logger.info(f'创建私信频道{dms_response.guild_id}')
+                await bot.send(
+                    message='hello~',
+                    event=DirectMessageCreateEvent(guild_id=dms_response.guild_id, id=ev.id, channel_id=ev.channel_id, author=ev.author),
+                )
+                await wws.finish('已向您主动发送私信,请注意查收')
+            except Exception:
+                logger.error(traceback.format_exc())
+                await wws.finish('私信发送失败，可能是单日限额，请明天再尝试')
         hikari = await init_hikari(
             platform=server_type,
             PlatformId=str(qqid),
@@ -272,12 +289,12 @@ async def startup_download(url, name):
 
 
 async def job_chech_version():
-    bot = get_bot()
+    get_bot()
     hikari = Hikari_Model()
     hikari = await check_version(hikari)
-    superid = driver.config.superusers
-    for each in superid:
-        await bot.send_private_msg(user_id=int(each), message=hikari.Output.Data)
+    # superid = driver.config.superusers
+    # for each in superid:
+    #    await bot.send_private_msg(user_id=int(each), message=hikari.Output.Data)
 
 
 scheduler.add_job(job_chech_version, 'cron', hour=12, misfire_grace_time=60)
