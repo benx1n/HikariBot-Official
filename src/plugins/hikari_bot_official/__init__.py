@@ -76,6 +76,9 @@ SecletProcess = defaultdict(lambda: SlectState(False, None, None))
 async def handle_first_receive(event: MessageEvent):
     user_id = event.get_user_id()
     await test.send(f'您的USER_ID为{user_id}')
+    # User = await bot.get_member(guild_id=str(event.guild_id), user_id=str(user_id))
+    # print(f'您的USER_ID为{user_id}\n您的uid为{User.user.union_openid}')
+    # await test.send(f'您的USER_ID为{user_id}\n您的id为{event.id}\n您的uid为{uid}')
 
 
 @wws.handle()
