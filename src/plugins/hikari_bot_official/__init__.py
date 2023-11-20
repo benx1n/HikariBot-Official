@@ -324,6 +324,8 @@ async def delete_image(ev: MessageEvent):
 async def check_rule(ev):
     if driver.config.filter_rule == 'None':
         return True
+    if isinstance(ev, DirectMessageCreateEvent) and driver.config.private:
+        return True
     if isinstance(ev, GuildMessageEvent):
         if (
             driver.config.filter_rule == 'white'
