@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hikari-bot-official"
-version = "0.2.5"
+version = "0.2.6"
 description = "Nonebot2 HikariBot For QQ-Official,支持战舰世界水表查询"
 authors = ["benx1n <shirakamikanade@gmail.com>"]
 license = "MIT"
@@ -31,9 +31,9 @@ black = {version = "^23.1a1", allow-prereleases = true}
 isort = "^5.12.0"
 
 [tool.nonebot]
-plugins = ["nonebot_plugin_apscheduler"]
-#plugins = ["nonebot_plugin_apscheduler","hikari_bot_official"]
-plugin_dirs = ["src/plugins"]
+#plugins = ["nonebot_plugin_apscheduler"]
+plugins = ["nonebot_plugin_apscheduler","hikari_bot_official"]
+#plugin_dirs = ["src/plugins"]
 
 [[tool.poetry.source]]
 name = "tsinghua"
