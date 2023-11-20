@@ -81,6 +81,8 @@ async def handle_first_receive(event: MessageEvent):
 @wws.handle()
 async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008, PLR0915
     try:
+        if not await check_rule(ev):
+            return
         bot = get_bot()
         server_type = driver.config.platform
         qqid = ev.get_user_id()
@@ -170,6 +172,8 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
 @bot_listen.handle()
 async def change_select_state(ev: MessageEvent):
     try:
+        if not await check_rule(ev):
+            return
         msg = str(ev.get_message()).strip()
         qqid = str(ev.get_user_id())
         print(msg, qqid)
@@ -318,18 +322,17 @@ async def delete_image(ev: MessageEvent):
 
 
 async def check_rule(ev):
+    if driver.config.filter_rule == 'None':
+        return True
     if isinstance(ev, GuildMessageEvent):
         if (
-            (driver.config.filter_rule == 'None')
-            or (
-                driver.config.filter_rule == 'white'
-                and (int(ev.guild_id) in driver.config.white_guild_list or int(ev.channel_id) in driver.config.white_channel_list)
-            )
-            or (
-                driver.config.filter_rule == 'black'
-                and (int(ev.guild_id) not in driver.config.ban_guild_list and int(ev.channel_id) not in driver.config.ban_channel_list)
-            )
+            driver.config.filter_rule == 'white'
+            and (int(ev.guild_id) in driver.config.white_guild_list or int(ev.channel_id) in driver.config.white_channel_list)
+        ) or (
+            driver.config.filter_rule == 'black'
+            and (int(ev.guild_id) not in driver.config.ban_guild_list and int(ev.channel_id) not in driver.config.ban_channel_list)
         ):
             return True
     else:
         return True
+    return False
