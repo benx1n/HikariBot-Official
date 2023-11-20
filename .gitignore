@@ -143,6 +143,8 @@ accounts
 .vscode
 logs
 .env.prod
+.env.prod-public
+.env.prod-private
 pyenv
 echarts.js
 src/plugins/hikari_bot_official/game/ocr_data.json

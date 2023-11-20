@@ -34,7 +34,7 @@ from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
 
 from .data_source import dir_path, image_path, nb2_file, template_path
-from .game.ocr import downlod_OcrResult, get_Random_Ocr_Pic
+from .game.ocr import get_Random_Ocr_Pic
 from .game.pupu import get_pupu_msg
 from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, upload_image
 
@@ -82,7 +82,7 @@ async def handle_first_receive(event: MessageEvent):
 async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008, PLR0915
     try:
         bot = get_bot()
-        server_type = 'QQ_OFFICIAL'
+        server_type = driver.config.platform
         qqid = ev.get_user_id()
         group_id = None
         if not _nlmt.check(qqid):
@@ -259,16 +259,6 @@ async def update_Hikari(ev: MessageEvent, bot: Bot):
 
 
 @driver.on_startup
-async def startup():
-    try:
-        if driver.config.ocr_on:
-            await downlod_OcrResult()
-    except Exception:
-        logger.error(traceback.format_exc())
-        return
-
-
-@driver.on_startup
 def web_run():
     if get_driver().config.upload_image == 'local':
         app: FastAPI = nonebot.get_app()
@@ -298,14 +288,12 @@ async def job_chech_version():
 
 
 scheduler.add_job(job_chech_version, 'cron', hour=12, misfire_grace_time=60)
-scheduler.add_job(startup, 'cron', hour=4, misfire_grace_time=60)
-scheduler.add_job(downlod_OcrResult, 'interval', minutes=10, misfire_grace_time=60)
 
 
 @bot_pupu.handle()
 async def send_pupu_msg(ev: MessageEvent):
     try:
-        if driver.config.group and ev.group_id not in driver.config.ban_group_list:
+        if await check_rule(ev):
             msg = await get_pupu_msg()
             await bot_pupu.send(msg)
     except ActionFailed:
@@ -327,3 +315,21 @@ async def delete_image(ev: MessageEvent):
     except Exception:
         logger.error(traceback.format_exc())
         await delete_image_cache.send('清除缓存失败')
+
+
+async def check_rule(ev):
+    if isinstance(ev, GuildMessageEvent):
+        if (
+            (driver.config.filter_rule == 'None')
+            or (
+                driver.config.filter_rule == 'white'
+                and (int(ev.guild_id) in driver.config.white_guild_list or int(ev.channel_id) in driver.config.white_channel_list)
+            )
+            or (
+                driver.config.filter_rule == 'black'
+                and (int(ev.guild_id) not in driver.config.ban_guild_list and int(ev.channel_id) not in driver.config.ban_channel_list)
+            )
+        ):
+            return True
+    else:
+        return True

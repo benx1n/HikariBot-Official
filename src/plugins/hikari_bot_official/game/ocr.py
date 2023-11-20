@@ -10,7 +10,7 @@ from nonebot.log import logger
 
 from ..data_source import config
 
-ocr_url = config.ocr_url
+ocr_url = None
 dir_path = Path(__file__).parent.parent
 game_path = Path(__file__).parent
 ocr_data_path = game_path / 'ocr_data.json'
