@@ -1,7 +1,6 @@
 import asyncio
 import os
 import platform
-import re
 import shutil
 import sys
 import traceback
@@ -12,7 +11,6 @@ import nonebot
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from hikari_core import callback_hikari, init_hikari, set_hikari_config
-from hikari_core.data_source import __version__
 from hikari_core.game.help import check_version
 from hikari_core.model import Hikari_Model
 from hikari_core.moudle.wws_real_game import (
@@ -21,19 +19,21 @@ from hikari_core.moudle.wws_real_game import (
     get_diff_ship,
     get_listen_list,
 )
-from nonebot import get_driver, on_command, on_fullmatch, on_message, require
-from nonebot.adapters.qq import ActionFailed, Bot, Message, MessageEvent, MessageSegment
+from nonebot import get_driver, on_command, on_message, require
+from nonebot.adapters.qq import (
+    ActionFailed,
+    Bot,
+    GuildMessageEvent,
+    Message,
+    MessageEvent,
+    MessageSegment,
+)
 from nonebot.log import logger
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
 
 from .data_source import dir_path, image_path, nb2_file, template_path
-from .game.ocr import (
-    downlod_OcrResult,
-    get_Random_Ocr_Pic,
-    pic2txt_byOCR,
-    upload_OcrResult,
-)
+from .game.ocr import downlod_OcrResult, get_Random_Ocr_Pic
 from .game.pupu import get_pupu_msg
 from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, upload_image
 
@@ -78,7 +78,7 @@ async def handle_first_receive(event: MessageEvent):
 
 
 @wws.handle()
-async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008
+async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B008, PLR0915
     try:
         print(matchmsg)
         server_type = 'QQ_OFFICIAL'
@@ -106,24 +106,33 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
         )
         if hikari.Status == 'success':
             if isinstance(hikari.Output.Data, bytes):
-                url = await upload_image(hikari.Output.Data)
-                logger.success(url)
-                await wws.send(MessageSegment.image(url))
+                if isinstance(ev, GuildMessageEvent):
+                    await wws.send(MessageSegment.file_image(hikari.Output.Data))
+                else:
+                    url = await upload_image(hikari.Output.Data)
+                    logger.success(url)
+                    await wws.send(MessageSegment.image(url))
             elif isinstance(hikari.Output.Data, str):
                 await wws.send(hikari.Output.Data)
         elif hikari.Status == 'wait':
-            url = await upload_image(hikari.Output.Data)
-            logger.success(url)
-            await wws.send(MessageSegment.image(url))
+            if isinstance(ev, GuildMessageEvent):
+                await wws.send(MessageSegment.file_image(hikari.Output.Data))
+            else:
+                url = await upload_image(hikari.Output.Data)
+                logger.success(url)
+                await wws.send(MessageSegment.image(url))
             hikari = await wait_to_select(hikari)
             if hikari.Status == 'error':
                 await wws.send(str(hikari.Output.Data))
                 return
             hikari = await callback_hikari(hikari)
             if isinstance(hikari.Output.Data, bytes):
-                url = await upload_image(hikari.Output.Data)
-                logger.success(url)
-                await wws.send(MessageSegment.image(url))
+                if isinstance(ev, GuildMessageEvent):
+                    await wws.send(MessageSegment.file_image(hikari.Output.Data))
+                else:
+                    url = await upload_image(hikari.Output.Data)
+                    logger.success(url)
+                    await wws.send(MessageSegment.image(url))
             elif isinstance(hikari.Output.Data, str):
                 await wws.send(str(hikari.Output.Data))
         else:
@@ -179,9 +188,12 @@ async def send_random_ocr_image(ev: MessageEvent):
     try:
         img = await get_Random_Ocr_Pic()
         if isinstance(img, bytes):
-            url = await upload_image(img)
-            logger.success(url)
-            await wws.send(MessageSegment.image(url))
+            if isinstance(ev, GuildMessageEvent):
+                await wws.send(MessageSegment.file_image(img))
+            else:
+                url = await upload_image(img)
+                logger.success(url)
+                await wws.send(MessageSegment.image(url))
         elif isinstance(img, str):
             await bot_get_random_pic.send(str(img))
     except Exception:
