@@ -129,6 +129,7 @@ async def upload_oss(bytes):
     key = f'bot_image/{md5}.png'
     bucket.put_object(key, bytes)
     url = bucket.sign_url('GET', key, 3600, slash_safe=True)
+    url = url.replace('http', 'https')
     print(url)
     return url
 

@@ -29,6 +29,7 @@ from nonebot.adapters.qq import (
     MessageEvent,
     MessageSegment,
 )
+from nonebot.exception import FinishedException
 from nonebot.log import logger
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
@@ -160,12 +161,15 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
                 await wws.send(str(hikari.Output.Data))
         else:
             await wws.send(str(hikari.Output.Data))
-    except ActionFailed:
-        logger.warning(traceback.format_exc())
+    except FinishedException:
+        return
+    except ActionFailed as e:
+        logger.error(traceback.format_exc())
         try:
-            await wws.send('发不出图片，可能被风控了QAQ')
+            await wws.send(f'发不出图片，可能撞限速了QAQ，请在频道重新尝试\n{e}')
             return True
         except Exception:
+            logger.error(traceback.format_exc())
             pass
         return False
     except Exception:
