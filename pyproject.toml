@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hikari-bot-official"
-version = "0.2.6.1"
+version = "0.2.7"
 description = "Nonebot2 HikariBot For QQ-Official,支持战舰世界水表查询"
 authors = ["benx1n <shirakamikanade@gmail.com>"]
 license = "MIT"
@@ -15,7 +15,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.8.0"
 nonebot2 = { version = "^2.1.0", extras = ["fastapi","websockets","httpx"] }
-nonebot-adapter-qq = "^1.1.0"
+nonebot-adapter-qq = "^1.2.0"
 nonebot-plugin-apscheduler = "^0.2.0"
 httpx = { version = ">=0.24.0", extras = ["http2"] }
 Jinja2 = "^3.0.0"
