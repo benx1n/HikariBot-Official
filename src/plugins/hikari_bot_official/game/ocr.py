@@ -5,6 +5,7 @@ from pathlib import Path
 
 import httpx
 import orjson
+from hikari_core.HttpClient_Pool import get_client_yuyuko
 from httpx import TimeoutException
 from nonebot.log import logger
 
@@ -14,8 +15,8 @@ ocr_url = None
 dir_path = Path(__file__).parent.parent
 game_path = Path(__file__).parent
 ocr_data_path = game_path / 'ocr_data.json'
-upload_url = 'https://api.wows.shinoaki.com/api/wows/cache/image/ocr'
-download_url = 'https://api.wows.shinoaki.com/api/wows/cache/image/ocr'
+upload_url = 'https://v3-api.wows.shinoaki.com:8443/api/wows/cache/image/ocr'
+download_url = 'https://v3-api.wows.shinoaki.com:8443/api/wows/cache/image/ocr'
 
 headers = {'Authorization': config.api_token}
 
@@ -50,11 +51,11 @@ async def upload_OcrResult(result_text, filename):
             'md5': filename,
             'text': b64encode(result_text.encode('utf-8')).decode('utf-8'),
         }
-        async with httpx.AsyncClient(headers=headers, timeout=5) as client:
-            resp = await client.post(upload_url, json=params)
-            result = orjson.loads(resp.content)
-            if result['code'] == 200:
-                await downlod_OcrResult()
+        client = await get_client_yuyuko()
+        resp = await client.post(upload_url, json=params)
+        result = orjson.loads(resp.content)
+        if result['code'] == 200:
+            await downlod_OcrResult()
     except Exception:
         logger.error(traceback.format_exc())
 
@@ -62,16 +63,17 @@ async def upload_OcrResult(result_text, filename):
 async def downlod_OcrResult():
     try:
         global ocr_filename_data
-        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
-            resp = await client.get(download_url)
-            result = orjson.loads(resp.content)
-            with open(ocr_data_path, 'w', encoding='UTF-8') as f:
-                if result['code'] == 200 and result['data']:
-                    f.write(orjson.dumps(result['data']).decode())
-                    ocr_filename_data = result['data']
-                else:
-                    with open(ocr_data_path, 'rb') as f:  # noqa: PLW2901
-                        ocr_filename_data = orjson.loads(f.read())
+        client = await get_client_yuyuko()
+        resp = await client.get(download_url)
+        result = orjson.loads(resp.content)
+        with open(ocr_data_path, 'w', encoding='UTF-8') as f:
+            if result['code'] == 200 and result['data']:
+                f.write(orjson.dumps(result['data']).decode())
+                ocr_filename_data = result['data']
+            else:
+                logger.error(result)
+                with open(ocr_data_path, 'rb') as f:  # noqa: PLW2901
+                    ocr_filename_data = orjson.loads(f.read())
         return
     except Exception:
         logger.error('请检查token是否配置正确，如无问题请尝试重启，可能是网络波动或服务器原因')
