@@ -155,9 +155,10 @@ async def upload_local(bytes):
     with open(image_path / f'{md5}.png', 'wb') as f:
         f.write(bytes)
     async with httpx.AsyncClient(proxies={}) as client:
-        url = 'https://4.ipw.cn'
-        resp = await client.get(url)
-        ip = str(resp.text)
+        #url = 'https://4.ipw.cn'
+        #resp = await client.get(url)
+        #ip = str(resp.text)
+        ip = '124.222.52.191'
     return f'http://{ip}:{config.port}/images/{md5}.png'
 
 

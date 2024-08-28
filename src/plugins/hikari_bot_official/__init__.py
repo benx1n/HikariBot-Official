@@ -112,10 +112,12 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
                     message='hello~',
                     event=DirectMessageCreateEvent(guild_id=dms_response.guild_id, id=ev.id, channel_id=ev.channel_id, author=ev.author),
                 )
-                await wws.finish('已向您主动发送私信,请注意查收')
+                await wws.send('已向您主动发送私信,请注意查收')
+                return
             except Exception:
                 logger.error(traceback.format_exc())
-                await wws.finish('私信发送失败，可能是单日限额，请明天再尝试')
+                await wws.send('私信发送失败，可能是单日限额，请明天再尝试')
+                return
         hikari = await init_hikari(
             platform=server_type,
             PlatformId=str(qqid),
@@ -133,18 +135,20 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
                 if isinstance(ev, GuildMessageEvent):
                     await wws.send(MessageSegment.file_image(hikari.Output.Data))
                 else:
-                    url = await upload_image(hikari.Output.Data)
-                    logger.success(url)
-                    await wws.send(MessageSegment.image(url))
+                    # url = await upload_image(hikari.Output.Data)
+                    # logger.success(url)
+                    # await wws.send(MessageSegment.image(url) + '@机器人发送指令即可使用')
+                    await wws.send(MessageSegment.file_image(hikari.Output.Data) + '@机器人发送指令即可使用')
             elif isinstance(hikari.Output.Data, str):
                 await wws.send(hikari.Output.Data)
         elif hikari.Status == 'wait':
             if isinstance(ev, GuildMessageEvent):
                 await wws.send(MessageSegment.file_image(hikari.Output.Data))
             else:
-                url = await upload_image(hikari.Output.Data)
-                logger.success(url)
-                await wws.send(MessageSegment.image(url))
+                # url = await upload_image(hikari.Output.Data)
+                # logger.success(url)
+                # await wws.send(MessageSegment.image(url) + '@机器人发送指令即可使用')
+                await wws.send(MessageSegment.file_image(hikari.Output.Data) + '@机器人发送指令即可使用')
             hikari = await wait_to_select(hikari)
             if hikari.Status == 'error':
                 await wws.send(str(hikari.Output.Data))
@@ -154,9 +158,10 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
                 if isinstance(ev, GuildMessageEvent):
                     await wws.send(MessageSegment.file_image(hikari.Output.Data))
                 else:
-                    url = await upload_image(hikari.Output.Data)
-                    logger.success(url)
-                    await wws.send(MessageSegment.image(url))
+                    # url = await upload_image(hikari.Output.Data)
+                    # logger.success(url)
+                    # await wws.send(MessageSegment.image(url) + '@机器人发送指令即可使用')
+                    await wws.send(MessageSegment.file_image(hikari.Output.Data) + '@机器人发送指令即可使用')
             elif isinstance(hikari.Output.Data, str):
                 await wws.send(str(hikari.Output.Data))
         else:
