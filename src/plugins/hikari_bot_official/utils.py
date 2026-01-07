@@ -121,6 +121,30 @@ async def byte2md5(bytes):
     return res
 
 
+async def obfuscate_url(url: str) -> str:
+    """在URL中插入干扰字符，以绕过URL检测"""
+    # 在域名部分插入干扰字符
+    parts = url.split('://')
+    if len(parts) > 1:
+        protocol = parts[0]
+        rest = parts[1]
+
+        # 找到第一个斜杠的位置（域名结束的位置）
+        slash_pos = rest.find('/')
+        if slash_pos == -1:  # 没有路径部分
+            domain = rest
+            path = ''
+        else:
+            domain = rest[:slash_pos]
+            path = rest[slash_pos:]
+
+        # 将域名中的点号替换为中文的"点"
+        obfuscated_domain = domain.replace('.', '点')
+
+        return f'{protocol}://{obfuscated_domain}{path}'
+    return url
+
+
 async def upload_oss(bytes):
     endpoint = config.oss_endpoint
     auth = oss2.Auth(config.oss_id, config.oss_key)
@@ -154,12 +178,8 @@ async def upload_local(bytes):
         os.mkdir(image_path)
     with open(image_path / f'{md5}.png', 'wb') as f:
         f.write(bytes)
-    async with httpx.AsyncClient(proxies={}) as client:
-        #url = 'https://4.ipw.cn'
-        #resp = await client.get(url)
-        #ip = str(resp.text)
-        ip = '124.222.52.191'
-    return f'http://{ip}:{config.port}/images/{md5}.png'
+    ip = 'wows.benx1n.com'
+    return f'https://{ip}/images/{md5}.png'
 
 
 async def upload_image(bytes):

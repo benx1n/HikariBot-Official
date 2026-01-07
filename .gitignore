@@ -151,3 +151,8 @@ src/plugins/hikari_bot_official/game/ocr_data.json
 src/plugins/hikari_bot_official/game/account_data
 src/plugins/hikari_bot_official/game/listen_config.json
 src/plugins/hikari_bot_official/image_cache
+src/plugins/hikari_bot_official/game/ship_cache.zip
+src/plugins/hikari_bot_official/game/ship_cache_hash.json
+src/plugins/hikari_bot_official/game/ship_cache
+src/plugins/hikari_bot_official/game/browsers
+src/plugins/hikari_bot_official/game/browser_temp

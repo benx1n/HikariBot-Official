@@ -10,7 +10,8 @@ import httpx
 import nonebot
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from hikari_core import callback_hikari, init_hikari, set_hikari_config
+from hikari_core import callback_hikari, init_hikari
+from hikari_core.config import set_hikari_config
 from hikari_core.game.help import check_version
 from hikari_core.model import Hikari_Model
 from hikari_core.moudle.wws_real_game import (
@@ -37,7 +38,7 @@ from nonebot.permission import SUPERUSER
 from .data_source import dir_path, image_path, nb2_file, template_path
 from .game.ocr import get_Random_Ocr_Pic
 from .game.pupu import get_pupu_msg
-from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, upload_image
+from .utils import DailyNumberLimiter, FreqLimiter, download, get_bot, obfuscate_url, upload_image
 
 scheduler = require('nonebot_plugin_apscheduler').scheduler
 
@@ -46,7 +47,7 @@ EXCEED_NOTICE = f'您今天已经冲过{_max}次了，请明早5点后再来！'
 is_first_run = True
 _nlmt = DailyNumberLimiter(_max)
 _flmt = FreqLimiter(3)
-__bot_version__ = '0.2.9'
+__bot_version__ = '0.3.0'
 
 test = on_command('test', priority=4, block=True)
 bot_get_random_pic = on_command('wws 随机表情包', block=True, priority=5)
@@ -171,10 +172,29 @@ async def main(ev: MessageEvent, matchmsg: Message = CommandArg()):  # noqa: B00
     except ActionFailed as e:
         logger.error(traceback.format_exc())
         try:
-            await wws.send(f'发不出图片，可能撞限速了QAQ，请在频道重新尝试\n{e}')
+            url = await upload_image(hikari.Output.Data)
+            logger.success(url)
+            await wws.send(MessageSegment.image(url) + '@机器人发送指令即可使用')
+            logger.success('重新发送成功')
             return True
         except Exception:
             logger.error(traceback.format_exc())
+            try:
+                # 先去掉协议前缀
+                url = url.replace('http://', '').replace('https://', '')
+                # 应用反和谐
+                obfuscated_url = await obfuscate_url('https://' + url)
+                # 去掉处理后的协议前缀
+                obfuscated_url = obfuscated_url.replace('https://', '')
+
+                logger.info(f'原始URL: {url}')
+                logger.info(f'反和谐后URL: {obfuscated_url}')
+
+                await wws.send(f'发不出图片，可能被和谐或图片过大QAQ\n请复制下一条消息中的地址打开\n⚠️注意：请手动将"点"替换为"."后再访问\n{e}')
+                await wws.send(obfuscated_url)
+            except Exception:
+                logger.error(f'反和谐URL失败: {traceback.format_exc()}')
+                await wws.send(f'发不出图片，可能撞限速或图片过大QAQ，请在频道@另一个机器人"战舰世界yuyuko助手"重新尝试\n{e}')
             pass
         return False
     except Exception:
@@ -191,6 +211,7 @@ async def change_select_state(ev: MessageEvent):
         qqid = str(ev.get_user_id())
         if SecletProcess[qqid].state and str(msg).isdigit():
             if int(msg) <= len(SecletProcess[qqid].SelectList):
+                await bot_listen.send('收到选择~')
                 SecletProcess[qqid] = SecletProcess[qqid]._replace(state=False)
                 SecletProcess[qqid] = SecletProcess[qqid]._replace(SlectIndex=int(msg))
             else:
@@ -213,7 +234,9 @@ async def wait_to_select(hikari):
         return hikari
     else:
         SecletProcess[hikari.UserInfo.PlatformId] = SlectState(False, None, None)
-        return hikari.error('已超时退出')
+        return hikari.error(
+            '已超时退出，如果您发送了数字但无响应，是被腾讯屏蔽了，可以尝试在指令的船名后添加.序号，例如wws me ship 大和.1，即代表选择序号1的大和'
+        )
 
 
 @bot_get_random_pic.handle()
