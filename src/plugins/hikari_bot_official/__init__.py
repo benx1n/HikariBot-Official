@@ -10,7 +10,8 @@ import httpx
 import nonebot
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from hikari_core import callback_hikari, init_hikari, set_hikari_config
+from hikari_core import callback_hikari, init_hikari
+from hikari_core.config import set_hikari_config
 from hikari_core.game.help import check_version
 from hikari_core.model import Hikari_Model
 from hikari_core.moudle.wws_real_game import (
